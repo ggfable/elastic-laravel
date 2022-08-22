@@ -1,0 +1,6 @@
+postgres-data/*
+logs/*
+elasticsearch-data/*
+core_cache/*
+certs/*
+app/*
