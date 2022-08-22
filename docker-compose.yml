@@ -1,0 +1,41 @@
+version: '3.9'
+
+services:
+
+  core_php:
+    build: .
+    image: ggfable/core_php:v1
+    container_name: core_php
+    restart: unless-stopped
+    working_dir: /var/www/core
+    command: sh -c "composer install && php artisan storage:link && chmod o+w ./storage/ -R && npm install --location=global svgo && php-fpm"
+    volumes:
+      - ./app:/var/www/core
+      - ./php-conf/.env:/var/www/core/.env
+      - ./php-conf/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - nginx_network
+    depends_on:
+      - core_pgsql
+
+  core_nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    image: ggfable/core_nginx:v1
+    container_name: core_nginx
+    restart: unless-stopped
+    working_dir: /var/www/core
+    ports:
+      - "8082:8082"
+      - "8083:8083"
+    volumes:
+      - ./app:/var/www/core
+      - ./php-conf/.env:/var/www/core/.env
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./logs:/var/log/nginx
+    networks:
+      - nginx_network
+    depends_on:
+      - core_php
