@@ -101,3 +101,79 @@ services:
           memory: 2G
     networks: 
       - nginx_network
+
+  core_cache:
+      image: redis:alpine
+      container_name: core_cache
+      restart: always
+      ports:
+        - '6379:6379'
+      command: redis-server --save 20 1 --loglevel warning --requirepass 1_t22nFh148lpE8vB8LsWgEH5IP2TjKlO
+      volumes: 
+        - ./core_cache:/data
+      networks: 
+        - nginx_network
+
+  create_certs:
+    container_name: create_certs
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.3.3
+    command: >
+      bash -c '
+        if [[ ! -f ./config/certificates/elastic-certificates.p12 ]]; then
+          bin/elasticsearch-certutil cert -out config/certificates/elastic-certificates.p12 -pass ""
+        fi;
+        chown -R 1000:0 /usr/share/elasticsearch/config/certificates
+      '
+    user: "0"
+    working_dir: /usr/share/elasticsearch
+    volumes: 
+      - ./certs:/usr/share/elasticsearch/config/certificates
+    networks: 
+        - nginx_network
+
+  elasticsearch:
+    container_name: elasticsearch
+    depends_on: [create_certs]
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.3.3
+    user: "1000:1000"
+    ports:
+      - "127.0.0.1:9200:9200"
+      - "127.0.0.1:9300:9300"
+    volumes:
+      - ./elasticsearch-data:/usr/share/elasticsearch/data
+      - ./certs:/usr/share/elasticsearch/config/certificates
+    environment:
+      - ELASTIC_PASSWORD=ASsOdgH_2deqFveyW2_sa # пароль для юзера elastic
+      - discovery.type=single-node
+      - cluster.routing.allocation.disk.threshold_enabled=false
+      - bootstrap.memory_lock=true
+      - action.destructive_requires_name=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.keystore.path=/usr/share/elasticsearch/config/certificates/elastic-certificates.p12
+      - xpack.security.transport.ssl.truststore.path=/usr/share/elasticsearch/config/certificates/elastic-certificates.p12
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    networks: 
+        - nginx_network
+
+  kibana:
+    container_name: kibana
+    depends_on: [elasticsearch]
+    image: docker.elastic.co/kibana/kibana:8.3.3
+    environment:
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=ASsOdgH_2deqFveyW2_sa
+    ports:
+      - "5601:5601"
+    networks: 
+      - nginx_network
+
+networks:
+  nginx_network:
+      name: nginx_network
+      external: true
