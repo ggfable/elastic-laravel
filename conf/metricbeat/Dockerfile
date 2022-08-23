@@ -13,6 +13,4 @@ RUN mkdir /var/log/metricbeat \
 COPY ./conf/metricbeat/entrypoint.sh /usr/local/bin/custom-entrypoint
 RUN chmod +x /usr/local/bin/custom-entrypoint
 
-USER root
-
 ENTRYPOINT ["/usr/local/bin/custom-entrypoint"]

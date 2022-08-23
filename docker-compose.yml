@@ -177,15 +177,19 @@ services:
       - ./conf/logstash/conf.d/:/usr/share/logstash/pipeline/
     environment:
       - xpack.monitoring.elasticsearch.hosts=elasticsearch:9200
+      - http.host=localhost
       - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
     networks:
       - nginx_network
 
   filebeat:
+    build:
+      context: .
+      dockerfile: ./conf/filebeat/Dockerfile
     container_name: filebeat
+    image: ggfable/core_filebeat:v1
     user: root
-    image: docker.elastic.co/beats/filebeat:8.3.3
-    command:
+    command: 
       - "-e"
       - "--strict.perms=false"
     depends_on: 
@@ -197,7 +201,7 @@ services:
       - "setup.kibana.host=kibana:5601"
       - "output.elasticsearch.hosts=elasticsearch:9200"
     volumes:
-      - ./conf/filebeat/conf/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro
+      - ./conf/filebeat/modules.d:/usr/share/filebeat/modules.d
       - ./logs/elasticsearch:/var/elk/logs
       - ./logs/core:/var/log/core
     networks:
@@ -211,14 +215,14 @@ services:
     container_name: metricbeat
     user: root
     command:
-      - "./metricbeat -e --strict.perms=false"
+      - "./metricbeat setup && ./metricbeat -e --strict.perms=false"
     environment:
       - "HOST_ELASTICSEARCH=elasticsearch:9200"
       - "HOST_KIBANA=kibana:5601"
     volumes:
       - ./conf/metricbeat/modules.d:/usr/share/metricbeat/modules.d
       - ./metricbeat-data:/usr/share/metricbeat/data
-      - ./conf/metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml
+      - ./conf/metricbeat/metricbeat.yml:/usr/share/metricbeat/metricbeat.yml:ro
       - //var/run/docker.sock://var/run/docker.sock
     networks:
       - nginx_network
