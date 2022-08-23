@@ -1,0 +1,16 @@
+# Module: nginx
+# Docs: https://www.elastic.co/guide/en/beats/metricbeat/8.3/metricbeat-module-nginx.html
+
+- module: nginx
+  #metricsets:
+  #  - stubstatus
+  period: 10s
+
+  # Nginx hosts
+  hosts: ["http://core_nginx:8082"]
+
+  # Path to server status. Default nginx_status
+  server_status_path: "server-status"
+
+  #username: "user"
+  #password: "secret"

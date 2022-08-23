@@ -1,0 +1,35 @@
+metricbeat.config.modules:
+  path: ${path.config}/modules.d/*.yml
+  reload.enabled: false
+
+setup.ilm.check_exists: false
+
+#-------------------------- Elasticsearch output ------------------------------
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+
+  username: "metricbeat_internal"
+  password: "ASsOdgH_2deqFveyW2"
+
+setup.kibana:
+    host: "kibana:5601" 
+    username: "kibana_system"  
+    password: "ASsOdgH_2deqFveyW2"
+
+metricbeat.autodiscover:
+  providers:
+    - type: docker
+      hints.enabled: true
+
+#============================== Dashboards =====================================      
+setup.dashboards.enabled: true
+
+logging.level: warning
+logging.to_files: true
+logging.to_syslog: false
+logging.files:
+  path: /var/log/metricbeat
+  name: metricbeat.log
+  keepfiles: 2
+  permissions: 0644
