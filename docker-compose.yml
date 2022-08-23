@@ -126,6 +126,7 @@ services:
       - ./logs/elasticsearch:/usr/share/elasticsearch/logs
     environment:
       - node.name=elasticsearch
+      - ELASTICSEARCH_USERNAME=elastic
       - ELASTIC_PASSWORD=ASsOdgH_2deqFveyW2 # пароль для юзера elastic
       - discovery.type=single-node
       - cluster.routing.allocation.disk.threshold_enabled=false
@@ -146,7 +147,7 @@ services:
     depends_on: [elasticsearch]
     image: docker.elastic.co/kibana/kibana:8.3.3
     environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_HOST=elasticsearch:9200
       - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD=ASsOdgH_2deqFveyW2
       - xpack.monitoring.ui.container.elasticsearch.enabled=true
@@ -163,6 +164,8 @@ services:
       interval: 10s
       timeout: 10s
       retries: 120
+    links:
+      - elasticsearch
     networks: 
       - nginx_network
 
@@ -177,7 +180,6 @@ services:
       - ./conf/logstash/conf.d/:/usr/share/logstash/pipeline/
     environment:
       - xpack.monitoring.elasticsearch.hosts=elasticsearch:9200
-      - http.host=localhost
       - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
     networks:
       - nginx_network
@@ -214,8 +216,10 @@ services:
     image: ggfable/core_metricbeat:v1
     container_name: metricbeat
     user: root
+    restart: unless-stopped
     command:
-      - "./metricbeat setup && ./metricbeat -e --strict.perms=false"
+      - "-e"
+      - "--strict.perms=false"
     environment:
       - "HOST_ELASTICSEARCH=elasticsearch:9200"
       - "HOST_KIBANA=kibana:5601"

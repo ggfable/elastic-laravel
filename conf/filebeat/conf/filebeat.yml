@@ -1,0 +1,58 @@
+filebeat.config.modules.path: ${path.config}/modules.d/*.yml
+
+filebeat.inputs:
+- type: log
+  enabled: true
+  ##symlinks: true #Collect soft link files
+  paths:
+    - /var/elk/logs/*.log
+  fields:
+    type: syslog
+  tags: ["log1"]
+
+- type: log 
+  enabled: true 
+  paths:
+    - /var/log/core/access.log
+    - /var/log/core/full.log
+  fields:
+    type: nginx_access
+
+  fields_under_root: true
+  scan_frequency: 5s
+
+- type: log
+  enabled: true
+  paths:
+    - /var/log/core/error.log
+  fields:
+    type: nginx_error
+
+  fields_under_root: true
+  scan_frequency: 5s
+
+# output.logstash:
+#   hosts: ["logstash:5044"]
+
+xpack.monitoring:
+  enabled: true
+  elasticsearch:
+    hosts: ["elasticsearch:9200"]
+
+output.elasticsearch:
+  hosts: ["http://elasticsearch:9200"]
+  username: "elastic"
+  password: "ASsOdgH_2deqFveyW2"
+
+setup.kibana:
+  host: "http://kibana:5601"
+
+setup.template.settings:
+  index.number_of_shards: 1
+
+processors:
+  - add_host_metadata:
+      when.not.contains.tags: forwarded
+  # - add_cloud_metadata: ~
+  - add_docker_metadata: ~
+  # - add_kubernetes_metadata: ~

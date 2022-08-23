@@ -3,6 +3,7 @@ metricbeat.config.modules:
   reload.enabled: false
 
 setup.ilm.check_exists: false
+setup.ilm.overwrite: true
 
 #-------------------------- Elasticsearch output ------------------------------
 
