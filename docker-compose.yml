@@ -50,7 +50,7 @@ services:
       TZ: "Europe/Moscow"
       POSTGRES_DB: "core_db"
       POSTGRES_USER: "core_usr"
-      POSTGRES_PASSWORD: "Te0AsCLcYs_wEv_dAS2_sd"
+      POSTGRES_PASSWORD: "sadsad"
       PGDATA: "/var/lib/postgresql/data/pgdata"
     command:
       - "postgres"
@@ -108,7 +108,7 @@ services:
       restart: always
       ports:
         - '6379:6379'
-      command: redis-server --save 20 1 --loglevel warning --requirepass 1_t22nFh148lpE8vB8LsWgEH5IP2TjKlO
+      command: redis-server --save 20 1 --loglevel warning --requirepass sadasdasdasd
       volumes: 
         - ./core_cache:/data
       networks: 
@@ -127,7 +127,7 @@ services:
     environment:
       - node.name=elasticsearch
       - ELASTICSEARCH_USERNAME=elastic
-      - ELASTIC_PASSWORD=ASsOdgH_2deqFveyW2 # пароль для юзера elastic
+      - ELASTIC_PASSWORD=asdsadasdsadad # пароль для юзера elastic
       - discovery.type=single-node
       - cluster.routing.allocation.disk.threshold_enabled=false
       - bootstrap.memory_lock=true
